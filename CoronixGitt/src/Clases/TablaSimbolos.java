@@ -1,45 +1,30 @@
 package Clases;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * Tabla de símbolos de Coronix.
+ * Permite re-declarar variables (sobreescritura).
+ */
 public class TablaSimbolos {
 
-    // tipo puede ser "cuarto", "media", "mega"
     public static class Simbolo {
-        public String tipo;
-        public Object valor;
+        public String tipo;   // "cuarto" | "media" | "mega"
+        public Object valor;  // instancia Cuarto / Media / Mega
 
         public Simbolo(String tipo, Object valor) {
             this.tipo  = tipo;
             this.valor = valor;
         }
-
-        @Override
-        public String toString() {
-            return "[" + tipo + "] = " + valor;
-        }
+        @Override public String toString() { return "[" + tipo + "] = " + valor; }
     }
 
-    private final Map<String, Simbolo> tabla = new HashMap<>();
+    private final Map<String, Simbolo> tabla = new LinkedHashMap<>();
 
-    public boolean existe(String nombre) {
-        return tabla.containsKey(nombre);
-    }
-
-    public void agregar(String nombre, Simbolo s) {
-        tabla.put(nombre, s);
-    }
-
-    public Simbolo obtener(String nombre) {
-        return tabla.get(nombre);
-    }
-
-    public void limpiar() {
-        tabla.clear();
-    }
-
-    public Map<String, Simbolo> getTodos() {
-        return tabla;
-    }
+    public boolean  existe(String n)             { return tabla.containsKey(n); }
+    public void     agregar(String n, Simbolo s) { tabla.put(n, s); }
+    public Simbolo  obtener(String n)            { return tabla.get(n); }
+    public void     limpiar()                    { tabla.clear(); }
+    public Map<String, Simbolo> getTodos()       { return tabla; }
 }

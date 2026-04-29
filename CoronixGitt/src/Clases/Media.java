@@ -1,24 +1,23 @@
 package Clases;
 
+/**
+ * Media — tipo decimal (double) del lenguaje Coronix.
+ */
 public class Media {
     private double valor;
 
-    public Media(double valor) {
-        this.valor = valor;
+    public Media(double valor) { this.valor = valor; }
+
+    public double getValor()        { return valor; }
+    public void   setValor(double v){ this.valor = v; }
+
+    public Media sumar(Media o)       { return new Media(valor + o.valor); }
+    public Media restar(Media o)      { return new Media(valor - o.valor); }
+    public Media multiplicar(Media o) { return new Media(valor * o.valor); }
+    public Media dividir(Media o) {
+        if (o.valor == 0) throw new ArithmeticException("División entre cero");
+        return new Media(valor / o.valor);
     }
 
-    public double getValor() { return valor; }
-
-    public Media sumar(Media otro)        { return new Media(this.valor + otro.valor); }
-    public Media restar(Media otro)       { return new Media(this.valor - otro.valor); }
-    public Media multiplicar(Media otro)  { return new Media(this.valor * otro.valor); }
-
-    public Media dividir(Media otro) {
-        if (otro.valor == 0)
-            throw new ArithmeticException("❌ Error semántico: división entre cero");
-        return new Media(this.valor / otro.valor);
-    }
-
-    @Override
-    public String toString() { return String.valueOf(valor); }
+    @Override public String toString() { return String.valueOf(valor); }
 }
