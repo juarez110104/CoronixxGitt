@@ -1,25 +1,11 @@
 package Analizador;
 
-/**
- * Error léxico, sintáctico o semántico del lenguaje Coronix.
- */
 public class Error {
+    public String tipo;
+    public int linea;
+    public String mensaje;
 
-    public enum Tipo { LEXICO, SINTACTICO, SEMANTICO }
-
-    public final Tipo   tipo;
-    public final int    linea;
-    public final String mensaje;
-
-    public Error(Tipo tipo, int linea, String mensaje) {
-        this.tipo    = tipo;
-        this.linea   = linea;
-        this.mensaje = mensaje;
-    }
-
-    @Override
-    public String toString() {
-        String l = linea > 0 ? " en línea " + linea : "";
-        return "Error " + tipo.name() + l + ": " + mensaje;
+    public Error(String t,int l,String m){
+        tipo=t;linea=l;mensaje=m;
     }
 }

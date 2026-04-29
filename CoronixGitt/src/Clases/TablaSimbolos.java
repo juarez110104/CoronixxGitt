@@ -3,28 +3,54 @@ package Clases;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Tabla de símbolos de Coronix.
- * Permite re-declarar variables (sobreescritura).
- */
 public class TablaSimbolos {
 
+    // 🔹 Clase interna: símbolo
     public static class Simbolo {
-        public String tipo;   // "cuarto" | "media" | "mega"
-        public Object valor;  // instancia Cuarto / Media / Mega
+        public String nombre;
+        public String tipo;
+        public Object valor;
 
-        public Simbolo(String tipo, Object valor) {
-            this.tipo  = tipo;
+        public Simbolo(String nombre, String tipo, Object valor) {
+            this.nombre = nombre;
+            this.tipo = tipo;
             this.valor = valor;
         }
-        @Override public String toString() { return "[" + tipo + "] = " + valor; }
+
+        @Override
+        public String toString() {
+            return nombre + " : " + tipo + " = " + valor;
+        }
     }
 
-    private final Map<String, Simbolo> tabla = new LinkedHashMap<>();
+    // 🔹 Tabla
+    private Map<String, Simbolo> tabla = new LinkedHashMap<>();
 
-    public boolean  existe(String n)             { return tabla.containsKey(n); }
-    public void     agregar(String n, Simbolo s) { tabla.put(n, s); }
-    public Simbolo  obtener(String n)            { return tabla.get(n); }
-    public void     limpiar()                    { tabla.clear(); }
-    public Map<String, Simbolo> getTodos()       { return tabla; }
+    // 🔥 INSERTAR / ACTUALIZAR
+    public void guardar(String nombre, String tipo, Object valor) {
+        tabla.put(nombre, new Simbolo(nombre, tipo, valor));
+    }
+
+    // 🔥 OBTENER
+    public Simbolo obtener(String nombre) {
+        if (!tabla.containsKey(nombre)) {
+            throw new RuntimeException("Variable no definida: " + nombre);
+        }
+        return tabla.get(nombre);
+    }
+
+    // 🔥 EXISTE
+    public boolean existe(String nombre) {
+        return tabla.containsKey(nombre);
+    }
+
+    // 🔥 LIMPIAR
+    public void limpiar() {
+        tabla.clear();
+    }
+
+    // 🔥 PARA MOSTRAR EN INTERFAZ
+    public Map<String, Simbolo> getTabla() {
+        return tabla;
+    }
 }
