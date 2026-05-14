@@ -1,31 +1,36 @@
 package Clases;
 
-import java.util.*;
 import Analizador.ErrorC;
+import java.util.*;
 
 public class TablaSimbolos {
 
-    public static class Simbolo {
+    // Clase interna para guardar tipo y valor
+    public static class Entrada {
         public String tipo;
         public Object valor;
-
-        public Simbolo(String t, Object v) {
-            tipo = t;
-            valor = v;
+        public Entrada(String tipo, Object valor) {
+            this.tipo = tipo;
+            this.valor = valor;
         }
     }
 
-    private Map<String, Simbolo> tabla = new HashMap<>();
+    private Map<String, Entrada> tabla = new HashMap<>();
 
-    public void guardar(String n, String t, Object v) {
-        tabla.put(n, new Simbolo(t, v));
+    // ✅ Verifica si una variable ya fue declarada
+    public boolean existe(String nombre) {
+        return tabla.containsKey(nombre);
     }
 
-    // 🔥 AQUÍ ESTÁ LA CORRECCIÓN IMPORTANTE
-    public Simbolo obtener(String n, int linea) throws ErrorC {
-        if (!tabla.containsKey(n))
-            throw new ErrorC(ErrorC.Tipo.SEMANTICO, linea,
-                    "Variable no definida: " + n);
-        return tabla.get(n);
+    public void guardar(String nombre, String tipo, Object valor) {
+        tabla.put(nombre, new Entrada(tipo, valor));
+    }
+
+    public Entrada obtener(String nombre, int ln) throws ErrorC {
+        Entrada e = tabla.get(nombre);
+        if (e == null)
+            throw new ErrorC(ErrorC.Tipo.SEMANTICO, ln,
+                "Variable no declarada: '" + nombre + "'");
+        return e;
     }
 }
