@@ -47,13 +47,6 @@ public class ClasePrincipal {
 
         switch (tipo) {
 
-            /*
-             * PALABRA RESERVADA: cuarto
-             * Equivalente a: int (entero)
-             * Descripción: Almacena números enteros sin decimales.
-             * Restricciones: Máximo 10 dígitos. No acepta punto decimal.
-             * Ejemplo de uso: cuarto edad => 25!!
-             */
             case "cuarto":
                 validarExpresionCuarto(expr, ln);
                 double v = evaluarNumerica(expr, ln);
@@ -71,27 +64,12 @@ public class ClasePrincipal {
                 tabla.guardar(nombre, tipo, new Cuarto(entero));
                 return nombre + " = " + entero;
 
-            /*
-             * PALABRA RESERVADA: media
-             * Equivalente a: double (decimal / punto flotante)
-             * Descripción: Almacena números con punto decimal.
-             * Restricciones: Parte entera máx. 10 dígitos, parte decimal máx. 8 dígitos.
-             *                NO acepta enteros puros; debe incluir punto decimal (ej: 3.0).
-             * Ejemplo de uso: media precio => 19.99!!
-             */
             case "media":
                 validarExpresionMedia(expr, ln);
                 double d = evaluarNumerica(expr, ln);
                 tabla.guardar(nombre, tipo, new Media(d));
                 return nombre + " = " + d;
 
-            /*
-             * PALABRA RESERVADA: mega
-             * Equivalente a: String (cadena de texto)
-             * Descripción: Almacena texto entre comillas dobles.
-             * Restricciones: Máximo 64 caracteres.
-             * Ejemplo de uso: mega saludo => "Hola mundo"!!
-             */
             case "mega":
                 String s = evaluarCadena(expr, ln);
 
@@ -131,19 +109,39 @@ public class ClasePrincipal {
                 .replace("$", " ");
 
         for (String s : expr.split("\\s+")) {
-            if (s.isEmpty()) continue;
-
-            if (s.matches("\\d+")) {
-                // Número entero puro → inválido para 'media'
-                throw new ErrorC(ErrorC.Tipo.SEMANTICO, ln,
-                        "El tipo 'media' no acepta enteros puros (" + s + "). "
-                        + "Debe escribirse con punto decimal, ejemplo: " + s + ".0");
+            if (s.isEmpty()) {
+                continue;
             }
 
-            if (s.matches("\\d+\\.\\d*") || s.matches("\\.\\d+")) {
+            // ❌ Número entero puro — no tiene punto decimal
+            if (s.matches("\\d+")) {
+                throw new ErrorC(ErrorC.Tipo.SEMANTICO, ln,
+                        "El tipo 'media' no acepta enteros puros ('" + s + "'). "
+                        + "Debe escribirse con punto decimal y dígitos después, "
+                        + "ejemplo: " + s + ".0");
+            }
+
+            // ❌ Tiene punto pero sin ningún dígito después (ej: 3.)
+            if (s.matches("\\d+\\.")) {
+                throw new ErrorC(ErrorC.Tipo.SEMANTICO, ln,
+                        "Valor inválido para 'media': '" + s + "' tiene punto decimal "
+                        + "pero no hay ningún dígito después de él. "
+                        + "Debes escribir al menos un dígito tras el punto, "
+                        + "ejemplo: " + s + "0");
+            }
+
+            // ❌ Solo un punto sin nada (ej: .)
+            if (s.equals(".")) {
+                throw new ErrorC(ErrorC.Tipo.SEMANTICO, ln,
+                        "Valor inválido para 'media': '.' no es un número válido. "
+                        + "Escribe un número decimal completo, ejemplo: 3.14");
+            }
+
+            // ✅ Decimal válido: dígitos, punto, dígitos
+            if (s.matches("\\d+\\.\\d+")) {
                 String[] p = s.split("\\.");
-                String antes = p.length > 0 ? p[0] : "";
-                String despues = p.length > 1 ? p[1] : "";
+                String antes = p[0];
+                String despues = p[1];
 
                 if (antes.length() > 10) {
                     throw new ErrorC(ErrorC.Tipo.SEMANTICO, ln,
@@ -156,6 +154,13 @@ public class ClasePrincipal {
                             "La parte decimal de '" + s + "' excede 8 dígitos (tiene "
                             + despues.length() + "). Máximo permitido: 8");
                 }
+
+            } else if (!s.matches("[a-zA-Z]+")) {
+                // ❌ Cualquier otro formato no reconocido como decimal ni como identificador
+                throw new ErrorC(ErrorC.Tipo.SEMANTICO, ln,
+                        "Valor inválido para 'media': '" + s + "'. "
+                        + "Se esperaba un número decimal con dígitos antes y después "
+                        + "del punto, ejemplo: 3.14");
             }
         }
     }
@@ -179,9 +184,15 @@ public class ClasePrincipal {
             double val = obtenerNumero(p[i + 1], ln);
 
             switch (p[i]) {
-                case "@": res += val; break;
-                case "#": res -= val; break;
-                case "&": res *= val; break;
+                case "@":
+                    res += val;
+                    break;
+                case "#":
+                    res -= val;
+                    break;
+                case "&":
+                    res *= val;
+                    break;
                 case "$":
                     if (val == 0) {
                         throw new ErrorC(ErrorC.Tipo.SEMANTICO, ln, "División entre cero");
@@ -196,14 +207,22 @@ public class ClasePrincipal {
 
     public static double obtenerNumero(String t, int ln) throws ErrorC {
 
-        if (t.matches("\\d+")) return Integer.parseInt(t);
+        if (t.matches("\\d+")) {
+            return Integer.parseInt(t);
+        }
 
-        if (t.matches("\\d+\\.\\d*") || t.matches("\\.\\d+")) return Double.parseDouble(t);
+        if (t.matches("\\d+\\.\\d*") || t.matches("\\.\\d+")) {
+            return Double.parseDouble(t);
+        }
 
         TablaSimbolos.Entrada sim = tabla.obtener(t, ln);
 
-        if (sim.valor instanceof Cuarto) return ((Cuarto) sim.valor).getValor();
-        if (sim.valor instanceof Media)  return ((Media)  sim.valor).getValor();
+        if (sim.valor instanceof Cuarto) {
+            return ((Cuarto) sim.valor).getValor();
+        }
+        if (sim.valor instanceof Media) {
+            return ((Media) sim.valor).getValor();
+        }
 
         throw new ErrorC(ErrorC.Tipo.SEMANTICO, ln, "No es número: " + t);
     }
@@ -228,7 +247,9 @@ public class ClasePrincipal {
 
         TablaSimbolos.Entrada sim = tabla.obtener(t, ln);
 
-        if (sim.valor instanceof Mega) return ((Mega) sim.valor).getValor();
+        if (sim.valor instanceof Mega) {
+            return ((Mega) sim.valor).getValor();
+        }
 
         throw new ErrorC(ErrorC.Tipo.SEMANTICO, ln, "No es cadena");
     }
@@ -236,13 +257,10 @@ public class ClasePrincipal {
     public static List<Token> obtenerTokens(String linea) {
 
         List<Token> lista = new ArrayList<>();
-
-        // Proteger cadenas con espacios antes de tokenizar
         List<String> partes = new ArrayList<>();
         boolean dentroComillas = false;
         StringBuilder actual = new StringBuilder();
 
-        // Primero separamos los símbolos especiales pegados al texto
         linea = linea.replace("!!", " !! ")
                 .replace("=>", " => ");
 
@@ -259,44 +277,29 @@ public class ClasePrincipal {
                 actual.append(c);
             }
         }
-        if (actual.length() > 0) partes.add(actual.toString());
+        if (actual.length() > 0) {
+            partes.add(actual.toString());
+        }
 
         for (String s : partes) {
-            if (s.isEmpty()) continue;
+            if (s.isEmpty()) {
+                continue;
+            }
 
-            /*
-             * Tokens de palabras reservadas:
-             * "cuarto" → equivale a int
-             * "media"  → equivale a double
-             * "mega"   → equivale a String
-             */
             if (s.equals("cuarto") || s.equals("media") || s.equals("mega")) {
                 lista.add(new Token("PR", s, "(" + s + ")", "SI"));
-
             } else if (s.matches("[a-zA-Z]+")) {
-                // Identificador: nombre de variable
                 lista.add(new Token("ID", s, "[a-zA-Z]+", "NO"));
-
             } else if (s.equals("=>")) {
-                // Operador de asignación del lenguaje
                 lista.add(new Token("ASIG", s, "(=>)", "SI"));
-
             } else if (s.matches("[@#&$]")) {
-                // Operadores aritméticos: @ suma, # resta, & multiplicación, $ división
                 lista.add(new Token("OP", s, "[@#&$]", "NO"));
-
             } else if (s.matches("\\d+") || s.matches("\\d+\\.\\d*") || s.matches("\\.\\d+")) {
-                // Constante numérica: entero o decimal
                 lista.add(new Token("NUM", s, "(num)", "NO"));
-
             } else if (s.startsWith("\"") && s.endsWith("\"")) {
-                // Cadena de texto entre comillas dobles
                 lista.add(new Token("CAD", s, "\".*\"", "NO"));
-
             } else if (s.equals("!!")) {
-                // Fin de sentencia (equivale a ; en Java)
                 lista.add(new Token("BREAK", s, "(!!)", "SI"));
-
             } else {
                 lista.add(new Token("ERROR", s, "?", "NO"));
             }
@@ -311,22 +314,14 @@ public class ClasePrincipal {
 
         for (String s : linea.split("\\s+")) {
 
-            /*
-             * Palabras reservadas del lenguaje Coronix:
-             * cuarto → int | media → double | mega → String
-             */
             if (s.equals("cuarto") || s.equals("media") || s.equals("mega")) {
                 lista.add(new String[]{s, "palabra reservada"});
-
             } else if (s.matches("[a-zA-Z]+")) {
                 lista.add(new String[]{s, "identificador"});
-
             } else if (s.matches("[@#&$]") || s.equals("=>")) {
                 lista.add(new String[]{s, "signo"});
-
             } else if (s.matches("\\d+") || s.matches("\\d+\\.\\d*") || s.matches("\\.\\d+")) {
                 lista.add(new String[]{s, "constante"});
-
             } else if (s.equals("!!")) {
                 lista.add(new String[]{s, "break"});
             }
